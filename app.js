@@ -9,9 +9,6 @@ const render = require('./lib/htmlRenderer')
 const OUTPUT_DIR = path.resolve(__dirname, "output");
 const outputPath = path.join(OUTPUT_DIR, "team.html");
 
-
-
-
 // Write code to use inquirer to gather information about the development team members,
 // and to create objects for each team member (using the correct classes as blueprints!)
 
@@ -36,7 +33,7 @@ const managerQuestions = [
     },
     {
         type: 'input',
-        name: 'Office Number',
+        name: 'OfficeNumber',
         message: "What is the office number of the Manager you'd like to create?"
     },
     {
@@ -65,7 +62,7 @@ const engineerQuestions = [
     },
     {
         type: 'input',
-        name: 'GitHub Account Name',
+        name: "GitHub",
         message: "What is the GitHub Account Name of the Engineer you'd like to create?"
     },
     {
@@ -108,7 +105,7 @@ const internQuestions = [
 ]
 
 function writeToFile(fileName, data) {
-        fs.writeFile(fileName, render(data), err => {
+        fs.writeFile(fileName, data, err => {
         if (err) {
             console.log(err)
         }
@@ -119,7 +116,7 @@ function writeToFile(fileName, data) {
 
 function askManagerQs() {
     inquirer.prompt(managerQuestions).then((data) => {
-        let newManager = new Manager(data.Name,data.Id,data.Email,data.Role)
+        let newManager = new Manager(data.Name, data.Id, data.Email, data.OfficeNumber)
         employees.push(newManager)
 
         inquirer.prompt(employeeTypeQs).then((data) => {
@@ -130,9 +127,8 @@ function askManagerQs() {
 
 function askEngineerQs() {
     inquirer.prompt(engineerQuestions).then((data) => {
-        let newEngineer = new Engineer(data.Name,data.Id,data.Email,data.Role)
-        employees.push(newEngineer)
-        employees.push(data)
+        let newEngineer = new Engineer(data.Name,data.Id,data.Email,data.GitHub)
+        employees.push(newEngineer)        
         inquirer.prompt(employeeTypeQs).then((data) => {
             routeQuestions(data)
         })
@@ -141,7 +137,7 @@ function askEngineerQs() {
 
 function askInternQs() {
     inquirer.prompt(internQuestions).then((data) => {
-        let newIntern = new Intern(data.Name,data.Id,data.Email,data.Role)
+        let newIntern = new Intern(data.Name,data.Id,data.Email,data.School)
         employees.push(newIntern)        
         inquirer.prompt(employeeTypeQs).then((data) => {
             routeQuestions(data)
@@ -170,7 +166,7 @@ const employeeTypeQs = [
 ]
 
 function routeQuestions(data) {
-    console.log(data)
+     
     if (data.EmployeeType === 'Engineer') {
         askEngineerQs()
     }
@@ -181,7 +177,17 @@ function routeQuestions(data) {
         askManagerQs()
     }
     else if (data.EmployeeType === 'None (exit)') {
-      console.log(employees)
+        
+        let HTML = render(employees)  
+        console.log(HTML)              
+        fs.writeFileSync(outputPath, HTML, err => {
+            if (err) {
+                console.log(err)
+            }
+            console.log(`Successfully wrote html`)
+        })
+        // writeToFile("Team.html", HTML)        
+        quit()
     }
 
 
@@ -190,15 +196,7 @@ function routeQuestions(data) {
 
 
 function quit() {
-    console.log(render(employees))
     
-    if (employees){
-        let HTML = render(employees)
-        
-        // let fileName = `${data.title.toLowerCase().split(' ').join('')}.HTML`
-        writeToFile("filename.html", HTML)
-    }    
-
     console.log("Goodbye!");
 
     process.exit();
@@ -208,7 +206,7 @@ function quit() {
 
 function init() {
     inquirer.prompt(initialQuestions).then((data) => {
-        console.log(data)
+        
 
         if (data.Proceed === true) {
             askManagerQs()
